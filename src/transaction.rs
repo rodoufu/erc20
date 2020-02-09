@@ -11,6 +11,7 @@ use web3::types::{
 
 // Deserialize, Serialize
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+//#[serde(rename_all = "camelCase")]
 pub enum TransferType {
 	Ethereum,
 	ERC20,
@@ -19,15 +20,28 @@ pub enum TransferType {
 pub trait Transfer {
 	fn from(&self) -> H160;
 	fn to(&self) -> H160;
+	fn contract(&self) -> Option<H160>;
 	fn value(&self) -> U256;
 	fn tx_hash(&self) -> H256;
 	fn block_hash(&self) -> H256;
 	fn block_number(&self) -> U64;
 	fn transaction_id(&self) -> TransactionId;
-	fn kind(&self) -> TransferType;
+}
+
+impl Transfer {
+	pub fn kind(&self) -> TransferType {
+		if self.contract().is_none() {
+			TransferType::Ethereum
+		} else {
+			TransferType::ERC20
+		}
+	}
+	pub fn is_ethereum(&self) -> bool { self.kind() == TransferType::Ethereum }
+	pub fn is_erc20(&self) -> bool { !self.is_ethereum() }
 }
 
 // Deserialize, Serialize, Eq, Hash
+//#[serde(rename_all = "camelCase")]
 #[derive(Debug, Clone, PartialEq)]
 pub enum ParsedTransaction {
 	EthereumTransfer(Transaction),
@@ -55,6 +69,7 @@ impl From<Transaction> for ParsedTransaction {
 }
 
 // Deserialize, Serialize,
+//#[serde(rename_all = "camelCase")]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ERC20Method {
 	Allowance,
