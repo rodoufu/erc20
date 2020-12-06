@@ -9,7 +9,7 @@ edition = "2018"
 [dependencies]
 hex = "0.4"
 maplit = "1.0"
-serde = "1.0"
+serde = { version = "1.0", features = ["derive"] }
 web3 = { git = "ssh://git@github.com/rodoufu/rust-web3.git", branch = "fix/async-std" }
 #web3 = "0.13"
 #web3 = "0.11"

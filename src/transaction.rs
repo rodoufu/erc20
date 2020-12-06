@@ -1,4 +1,8 @@
 use maplit::hashmap;
+use serde::{
+	Deserialize,
+	Serialize,
+};
 use std::collections::HashMap;
 use web3::types::{
 	H160,
@@ -9,9 +13,8 @@ use web3::types::{
 	U256,
 };
 
-// Deserialize, Serialize
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-//#[serde(rename_all = "camelCase")]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub enum TransferType {
 	Ethereum,
 	ERC20,
@@ -40,9 +43,8 @@ impl dyn Transfer {
 	pub fn is_erc20(&self) -> bool { !self.is_ethereum() }
 }
 
-// Deserialize, Serialize, Eq, Hash
-//#[serde(rename_all = "camelCase")]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub enum ParsedTransaction {
 	EthereumTransfer(Transaction),
 	ContractInvocation(TransactionContractInvocation),
@@ -68,7 +70,7 @@ impl From<Transaction> for ParsedTransaction {
 	}
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub enum TransactionContractInvocation {
 	ERC20(ERC20Method, Transaction),
 	Other(Transaction),
@@ -84,9 +86,8 @@ impl From<Transaction> for TransactionContractInvocation {
 	}
 }
 
-// Deserialize, Serialize,
-//#[serde(rename_all = "camelCase")]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub enum ERC20Method {
 	Allowance,
 	Approve,
