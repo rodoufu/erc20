@@ -28,7 +28,7 @@ pub trait Transfer {
 	fn transaction_id(&self) -> TransactionId;
 }
 
-impl Transfer {
+impl dyn Transfer {
 	pub fn kind(&self) -> TransferType {
 		if self.contract().is_none() {
 			TransferType::Ethereum
@@ -45,7 +45,7 @@ impl Transfer {
 #[derive(Debug, Clone, PartialEq)]
 pub enum ParsedTransaction {
 	EthereumTransfer(Transaction),
-	ContractInvocation(ERC20Method),
+	ContractInvocation(TransactionContractInvocation),
 	ContractCreation(Transaction),
 	Other(Transaction),
 }
@@ -60,10 +60,26 @@ impl From<Transaction> for ParsedTransaction {
 				Self::ContractCreation(transaction)
 			},
 			Some(_) => if transaction.input.0.is_empty() {
-				Self::ContractInvocation(ERC20Method::Allowance)
+				Self::ContractInvocation(transaction.into())
 			} else {
-				Self::ContractCreation(transaction)
+				Self::Other(transaction)
 			},
+		}
+	}
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum TransactionContractInvocation {
+	ERC20(ERC20Method),
+	Other(Transaction),
+}
+
+impl From<Transaction> for TransactionContractInvocation {
+	fn from(transaction: Transaction) -> Self {
+		let method = transaction.clone().input.0.into();
+		match method {
+			ERC20Method::Unidentified => Self::Other(transaction),
+			_ => Self::ERC20(method),
 		}
 	}
 }
