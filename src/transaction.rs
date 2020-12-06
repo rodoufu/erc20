@@ -1,3 +1,12 @@
+use crate::{
+	erc20::ERC20Method,
+	error::ERC20Error,
+	transfer::{
+		TransferType,
+		Transfer,
+	},
+	util::BytesToFixedNumber,
+};
 use serde::{
 	Deserialize,
 	Serialize,
@@ -11,12 +20,6 @@ use web3::types::{
 	U64,
 	U256,
 };
-use crate::transfer::{
-	TransferType,
-	Transfer,
-};
-use crate::erc20::ERC20Method;
-use crate::error::ERC20Error;
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -75,14 +78,15 @@ impl TryFrom<Transaction> for TransactionAndTransferType {
 		let parsed_transaction: ParsedTransaction = value.into();
 		match parsed_transaction {
 			ParsedTransaction::EthereumTransfer(transaction) => Ok(Self {
-				transaction, transfer_type: TransferType::Ethereum
+				transaction,
+				transfer_type: TransferType::Ethereum,
 			}),
 			ParsedTransaction::ContractInvocation(transaction) => {
 				let contract_invocation: TransactionContractInvocation = transaction.into();
 				match contract_invocation {
 					TransactionContractInvocation::ERC20(method, transaction) => {
 						match method {
-							ERC20Method::Transfer => Ok(Self{
+							ERC20Method::Transfer => Ok(Self {
 								transaction,
 								transfer_type: TransferType::ERC20,
 							}),
@@ -92,46 +96,83 @@ impl TryFrom<Transaction> for TransactionAndTransferType {
 							}),
 							_ => Err(ERC20Error::NoTransferTransaction),
 						}
-					},
+					}
 					TransactionContractInvocation::Other(_) => Err(ERC20Error::NoTransferTransaction),
 				}
-			},
+			}
 			ParsedTransaction::ContractCreation(_) => Err(ERC20Error::NoTransferTransaction),
 			ParsedTransaction::Other(_) => Err(ERC20Error::NoTransferTransaction),
 		}
 	}
 }
 
-impl Transfer for TransactionAndTransferType {
-	fn from(&self) -> H160 {
-		self.transaction.from
-	}
-
-	fn to(&self) -> H160 {
+impl TransactionAndTransferType {
+	pub fn get_from_to_value(&self) -> Result<(H160, H160, U256), ERC20Error> {
+		let from_v: H160;
+		let to_v: H160;
+		let value_v: U256;
 		match self.transfer_type {
 			TransferType::Ethereum => {
-				if let Some(to) = self.transaction.to {
-					to
+				from_v = self.transaction.from;
+				if let Some(v) = self.transaction.to {
+					to_v = v;
 				} else {
-					panic!("Unexpected transaction for TransactionAndTransferType::to");
+					return Err(ERC20Error::NoTransferTransaction);
 				}
-			},
+				value_v = self.transaction.value;
+			}
 			TransferType::ERC20 => {
-				let contract_invocation: TransactionContractInvocation = self.transaction.clone().into();
+				let contract_invocation: TransactionContractInvocation =
+					self.transaction.clone().into();
 				match contract_invocation {
 					TransactionContractInvocation::ERC20(method, transaction) => {
 						match method {
-							ERC20Method::Transfer => H160::zero(), // FIXME
-							ERC20Method::TransferFrom => H160::zero(), // FIXME
+							ERC20Method::Transfer => {
+								let mut resp: BytesToFixedNumber =
+									self.transaction.input.clone().into();
+								let _ignore = resp.next_vec(4);
+								from_v = self.transaction.from;
+								to_v = resp.next_h160()?;
+								value_v = resp.next_u256()?;
+							}
+							ERC20Method::TransferFrom => {
+								let mut resp: BytesToFixedNumber =
+									self.transaction.input.clone().into();
+								let _ignore = resp.next_vec(4);
+								from_v = resp.next_h160()?;
+								to_v = resp.next_h160()?;
+								value_v = resp.next_u256()?;
+							}
 							_ => {
-								panic!("Unexpected transaction for TransactionAndTransferType::to invalid ERC20 method");
+								return Err(ERC20Error::NoTransferTransaction);
 							}
 						}
 					}
 					TransactionContractInvocation::Other(_) => {
-						panic!("Unexpected transaction for TransactionAndTransferType::to other");
+						return Err(ERC20Error::NoTransferTransaction);
 					}
 				}
+			}
+		}
+		Ok((from_v, to_v, value_v))
+	}
+}
+
+impl Transfer for TransactionAndTransferType {
+	fn from(&self) -> H160 {
+		match self.get_from_to_value() {
+			Ok((the_from, _, _)) => the_from,
+			Err(err) => {
+				panic!("Unexpected transaction for TransactionAndTransferType::from {:?}", err)
+			}
+		}
+	}
+
+	fn to(&self) -> H160 {
+		match self.get_from_to_value() {
+			Ok((_, the_to, _)) => the_to,
+			Err(err) => {
+				panic!("Unexpected transaction for TransactionAndTransferType::to {:?}", err)
 			}
 		}
 	}
@@ -149,7 +190,12 @@ impl Transfer for TransactionAndTransferType {
 	}
 
 	fn value(&self) -> U256 {
-		unimplemented!()
+		match self.get_from_to_value() {
+			Ok((_, _, the_value)) => the_value,
+			Err(err) => {
+				panic!("Unexpected transaction for TransactionAndTransferType::value {:?}", err)
+			}
+		}
 	}
 
 	fn tx_hash(&self) -> H256 {

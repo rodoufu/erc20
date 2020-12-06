@@ -8,4 +8,6 @@ use serde::{
 pub enum ERC20Error {
 	NoTransferTransaction,
 	UnexpectedSize,
+	UnexpectedEndOfData,
+	UnexpectedType,
 }
