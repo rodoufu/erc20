@@ -3,10 +3,17 @@ use serde::{
 	Deserialize,
 	Serialize,
 };
-use std::collections::HashMap;
+use std::{
+	convert::TryFrom,
+	collections::HashMap,
+};
 use web3::types::{
+	BlockId,
+	BlockNumber,
 	H160,
 	H256,
+	Index,
+	Res,
 	Transaction,
 	TransactionId,
 	U64,
@@ -26,21 +33,36 @@ pub trait Transfer {
 	fn contract(&self) -> Option<H160>;
 	fn value(&self) -> U256;
 	fn tx_hash(&self) -> H256;
-	fn block_hash(&self) -> H256;
-	fn block_number(&self) -> U64;
-	fn transaction_id(&self) -> TransactionId;
+	fn block_hash(&self) -> Option<H256>;
+	fn block_number(&self) -> Option<U64>;
+	fn transaction_index(&self) -> Option<Index>;
 }
 
 impl dyn Transfer {
 	pub fn kind(&self) -> TransferType {
-		if self.contract().is_none() {
-			TransferType::Ethereum
-		} else {
-			TransferType::ERC20
+		match self.contract() {
+			None => TransferType::Ethereum,
+			Some(_) => TransferType::ERC20,
 		}
 	}
-	pub fn is_ethereum(&self) -> bool { self.kind() == TransferType::Ethereum }
+
+	pub fn is_ethereum(&self) -> bool {
+		self.kind() == TransferType::Ethereum
+	}
+
 	pub fn is_erc20(&self) -> bool { !self.is_ethereum() }
+
+	fn transaction_id(&self) -> TransactionId {
+		if let Some(block_num) = self.block_number() {
+			if let Some(t_idx) = self.transaction_index() {
+				TransactionId::Block(BlockId::Number(BlockNumber::Number(block_num)), t_idx)
+			} else {
+				TransactionId::Hash(self.tx_hash())
+			}
+		} else {
+			TransactionId::Hash(self.tx_hash())
+		}
+	}
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
@@ -119,5 +141,94 @@ impl From<Vec<u8>> for ERC20Method {
 			}
 			Self::Unidentified
 		}
+	}
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TransactionAndTransferType {
+	transaction: Transaction,
+	transfer_type: TransferType,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ERC20Error {
+	NoTransferTransaction,
+}
+
+impl TryFrom<Transaction> for TransactionAndTransferType {
+	type Error = ERC20Error;
+
+	fn try_from(value: Transaction) -> Result<Self, Self::Error> {
+		let parsed_transaction: ParsedTransaction = value.into();
+		match parsed_transaction {
+			ParsedTransaction::EthereumTransfer(transaction) => Ok(Self {
+				transaction, transfer_type: TransferType::Ethereum
+			}),
+			ParsedTransaction::ContractInvocation(transaction) => {
+				let contract_invocation: TransactionContractInvocation = transaction.into();
+				match contract_invocation {
+					TransactionContractInvocation::ERC20(method, transaction) => {
+						match method {
+							ERC20Method::Transfer => Ok(Self{
+								transaction,
+								transfer_type: TransferType::ERC20,
+							}),
+							ERC20Method::TransferFrom => Ok(Self {
+								transaction,
+								transfer_type: TransferType::ERC20,
+							}),
+							_ => Err(ERC20Error::NoTransferTransaction),
+						}
+					},
+					TransactionContractInvocation::Other(_) => Err(ERC20Error::NoTransferTransaction),
+				}
+			},
+			ParsedTransaction::ContractCreation(_) => Err(ERC20Error::NoTransferTransaction),
+			ParsedTransaction::Other(_) => Err(ERC20Error::NoTransferTransaction),
+		}
+	}
+}
+
+impl Transfer for TransactionAndTransferType {
+	fn from(&self) -> H160 {
+		self.transaction.from
+	}
+
+	fn to(&self) -> H160 {
+		unimplemented!()
+	}
+
+	fn contract(&self) -> Option<H160> {
+		match self.transfer_type {
+			TransferType::Ethereum => None,
+			TransferType::ERC20 => {
+				match self.transaction.to {
+					None => panic!("Unexpected transaction for TransactionAndTransferType"),
+					Some(to) => Some(to),
+				}
+			}
+		}
+	}
+
+	fn value(&self) -> U256 {
+		unimplemented!()
+	}
+
+	fn tx_hash(&self) -> H256 {
+		self.transaction.hash
+	}
+
+	fn block_hash(&self) -> Option<H256> {
+		self.transaction.block_hash
+	}
+
+	fn block_number(&self) -> Option<U64> {
+		self.transaction.block_number
+	}
+
+	fn transaction_index(&self) -> Option<Index> {
+		self.transaction.transaction_index
 	}
 }
