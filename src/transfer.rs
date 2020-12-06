@@ -1,11 +1,6 @@
-use maplit::hashmap;
 use serde::{
 	Deserialize,
 	Serialize,
-};
-use std::{
-	convert::TryFrom,
-	collections::HashMap,
 };
 use web3::types::{
 	BlockId,
@@ -13,8 +8,6 @@ use web3::types::{
 	H160,
 	H256,
 	Index,
-	Res,
-	Transaction,
 	TransactionId,
 	U64,
 	U256,

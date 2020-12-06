@@ -1,11 +1,6 @@
 use web3::types::{
 	Bytes,
-	H160,
-	H256,
 	Transaction,
-	TransactionId,
-	U64,
-	U256,
 };
 use crate::util::string_to_h256;
 
