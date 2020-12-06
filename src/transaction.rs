@@ -19,51 +19,10 @@ use web3::types::{
 	U64,
 	U256,
 };
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub enum TransferType {
-	Ethereum,
-	ERC20,
-}
-
-pub trait Transfer {
-	fn from(&self) -> H160;
-	fn to(&self) -> H160;
-	fn contract(&self) -> Option<H160>;
-	fn value(&self) -> U256;
-	fn tx_hash(&self) -> H256;
-	fn block_hash(&self) -> Option<H256>;
-	fn block_number(&self) -> Option<U64>;
-	fn transaction_index(&self) -> Option<Index>;
-}
-
-impl dyn Transfer {
-	pub fn kind(&self) -> TransferType {
-		match self.contract() {
-			None => TransferType::Ethereum,
-			Some(_) => TransferType::ERC20,
-		}
-	}
-
-	pub fn is_ethereum(&self) -> bool {
-		self.kind() == TransferType::Ethereum
-	}
-
-	pub fn is_erc20(&self) -> bool { !self.is_ethereum() }
-
-	fn transaction_id(&self) -> TransactionId {
-		if let Some(block_num) = self.block_number() {
-			if let Some(t_idx) = self.transaction_index() {
-				TransactionId::Block(BlockId::Number(BlockNumber::Number(block_num)), t_idx)
-			} else {
-				TransactionId::Hash(self.tx_hash())
-			}
-		} else {
-			TransactionId::Hash(self.tx_hash())
-		}
-	}
-}
+use crate::transfer::{
+	TransferType,
+	Transfer,
+};
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -155,6 +114,7 @@ pub struct TransactionAndTransferType {
 #[serde(rename_all = "camelCase")]
 pub enum ERC20Error {
 	NoTransferTransaction,
+	UnexpectedSize,
 }
 
 impl TryFrom<Transaction> for TransactionAndTransferType {
@@ -197,7 +157,32 @@ impl Transfer for TransactionAndTransferType {
 	}
 
 	fn to(&self) -> H160 {
-		unimplemented!()
+		match self.transfer_type {
+			TransferType::Ethereum => {
+				if let Some(to) = self.transaction.to {
+					to
+				} else {
+					panic!("Unexpected transaction for TransactionAndTransferType::to");
+				}
+			},
+			TransferType::ERC20 => {
+				let contract_invocation: TransactionContractInvocation = self.transaction.clone().into();
+				match contract_invocation {
+					TransactionContractInvocation::ERC20(method, transaction) => {
+						match method {
+							ERC20Method::Transfer => H160::zero(), // FIXME
+							ERC20Method::TransferFrom => H160::zero(), // FIXME
+							_ => {
+								panic!("Unexpected transaction for TransactionAndTransferType::to invalid ERC20 method");
+							}
+						}
+					}
+					TransactionContractInvocation::Other(_) => {
+						panic!("Unexpected transaction for TransactionAndTransferType::to other");
+					}
+				}
+			}
+		}
 	}
 
 	fn contract(&self) -> Option<H160> {
@@ -205,7 +190,7 @@ impl Transfer for TransactionAndTransferType {
 			TransferType::Ethereum => None,
 			TransferType::ERC20 => {
 				match self.transaction.to {
-					None => panic!("Unexpected transaction for TransactionAndTransferType"),
+					None => panic!("Unexpected transaction for TransactionAndTransferType::contract"),
 					Some(to) => Some(to),
 				}
 			}
@@ -231,4 +216,43 @@ impl Transfer for TransactionAndTransferType {
 	fn transaction_index(&self) -> Option<Index> {
 		self.transaction.transaction_index
 	}
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ContractAddress {
+	/// Basic Attention Token
+	BAT(H160),
+	/// Binance Token
+	BNB(H160),
+	/// Binance USD
+	BUSD(H160),
+	/// ChainLink
+	LINK(H160),
+	/// Tether USD
+	TUSD(H160),
+	/// USD Coin
+	USDC(H160),
+	/// True USD
+	USDT(H160),
+	/// Wrapped BTC
+	WBTC(H160),
+	/// Compound Dai
+	cDAI(H160),
+	/// Crypto.com Coin
+	CRO(H160),
+	/// Digital Asset Exchange
+	OKB(H160),
+	/// Bitfinex LEO Token
+	LEO(H160),
+	/// Wrapped Filecoin
+	WFIL(H160),
+	/// VeChain
+	VEN(H160),
+	/// Dai Stablecoin
+	DAI(H160),
+	/// Uniswap
+	UNI(H160),
+	/// Unidentified
+	Unidentified(H160),
 }

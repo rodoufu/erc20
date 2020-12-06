@@ -2,15 +2,13 @@ extern crate serde;
 extern crate hex;
 
 mod util;
+mod transfer;
 mod transaction;
 #[cfg(test)]
 mod transaction_test;
 
-
-#[cfg(test)]
-mod tests {
-	#[test]
-	fn it_works() {
-		assert_eq!(2 + 2, 4);
-	}
-}
+pub use self::util::{
+	string_to_h160,
+	string_to_h256,
+	string_to_u256,
+};
