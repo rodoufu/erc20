@@ -70,7 +70,7 @@ impl From<Transaction> for ParsedTransaction {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TransactionContractInvocation {
-	ERC20(ERC20Method),
+	ERC20(ERC20Method, Transaction),
 	Other(Transaction),
 }
 
@@ -79,7 +79,7 @@ impl From<Transaction> for TransactionContractInvocation {
 		let method = transaction.clone().input.0.into();
 		match method {
 			ERC20Method::Unidentified => Self::Other(transaction),
-			_ => Self::ERC20(method),
+			_ => Self::ERC20(method, transaction),
 		}
 	}
 }
