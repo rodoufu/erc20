@@ -45,6 +45,7 @@ impl dyn Transfer {
 
 	pub fn is_erc20(&self) -> bool { !self.is_ethereum() }
 
+	#[allow(dead_code)]
 	fn transaction_id(&self) -> TransactionId {
 		if let Some(block_num) = self.block_number() {
 			if let Some(t_idx) = self.transaction_index() {

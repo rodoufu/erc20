@@ -117,7 +117,7 @@ impl FixedNumberToBytes {
 	}
 
 	pub fn push_h160(&mut self, value: &H160) {
-		for i in 0..((256 - 160) / 8) {
+		for _ in 0..((256 - 160) / 8) {
 			self.data.push(0);
 		}
 		self.push_h160_not_padded(value);

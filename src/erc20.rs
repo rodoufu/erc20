@@ -91,6 +91,7 @@ pub enum ContractAddress {
 	USDT(H160),
 	/// Wrapped BTC
 	WBTC(H160),
+	#[allow(non_camel_case_types)]
 	/// Compound Dai
 	cDAI(H160),
 	/// Crypto.com Coin

@@ -39,7 +39,7 @@ impl From<Transaction> for ParsedTransaction {
 			} else {
 				Self::ContractCreation(transaction)
 			},
-			Some(_) => if transaction.input.0.is_empty() {
+			Some(_) => if !transaction.input.0.is_empty() {
 				Self::ContractInvocation(transaction.into())
 			} else {
 				Self::Other(transaction)
@@ -129,15 +129,15 @@ impl TransactionAndTransferType {
 						match method {
 							ERC20Method::Transfer => {
 								let mut resp: BytesToFixedNumber =
-									self.transaction.input.clone().into();
+									transaction.input.clone().into();
 								let _ignore = resp.next_vec(4);
-								from_v = self.transaction.from;
+								from_v = transaction.from;
 								to_v = resp.next_h160()?;
 								value_v = resp.next_u256()?;
 							}
 							ERC20Method::TransferFrom => {
 								let mut resp: BytesToFixedNumber =
-									self.transaction.input.clone().into();
+									transaction.input.clone().into();
 								let _ignore = resp.next_vec(4);
 								from_v = resp.next_h160()?;
 								to_v = resp.next_h160()?;
@@ -214,4 +214,3 @@ impl Transfer for TransactionAndTransferType {
 		self.transaction.transaction_index
 	}
 }
-
