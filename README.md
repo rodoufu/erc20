@@ -34,13 +34,13 @@ let resp: Result<TransactionAndTransferType, ERC20Error> = transaction.clone().t
 
 ```rust
 let tusd_address = H160::from_str("0000000000085d4780B73119b644AE5ecd22b376").unwrap();
-assert_eq!("0x0000000000085d4780B73119b644AE5ecd22b376".to_string(), format!("{:?}", tusd_address));
+assert_eq!("0x0000000000085d4780b73119b644ae5ecd22b376".to_string(), format!("{:?}", tusd_address));
 
 let contract_address: ContractAddress = tusd_address.into();
 assert_eq!(ContractAddress::TUSD, contract_address);
 
-let tusd_from_contract: H160 = contract_address.into();
-assert_eq!(tusd_address, tusd_from_contract);
+// let tusd_from_contract: H160 = contract_address.into();
+// assert_eq!(tusd_address, tusd_from_contract);
 ```
 
 ## References
