@@ -15,6 +15,6 @@ pub enum ERC20Error {
 	UnexpectedSize,
 	/// The end of the input was found before expected.
 	UnexpectedEndOfData,
-	// Returned when the type or value used is not expected for the operation.
+	/// Returned when the type or value used is not expected for the operation.
 	UnexpectedType,
 }

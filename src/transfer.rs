@@ -46,6 +46,7 @@ pub trait Transfer {
 }
 
 impl dyn Transfer {
+	/// The kind of transfer.
 	pub fn kind(&self) -> TransferType {
 		match self.contract() {
 			None => TransferType::Ethereum,
@@ -53,12 +54,15 @@ impl dyn Transfer {
 		}
 	}
 
+	/// Checks if it is an Ether transfer.
 	pub fn is_ethereum(&self) -> bool {
 		self.kind() == TransferType::Ethereum
 	}
 
+	/// Checks if it is an ERC20 transfer.
 	pub fn is_erc20(&self) -> bool { !self.is_ethereum() }
 
+	/// Retrieves the transaction id.
 	#[allow(dead_code)]
 	fn transaction_id(&self) -> TransactionId {
 		if let Some(block_num) = self.block_number() {

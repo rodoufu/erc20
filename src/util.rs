@@ -1,4 +1,4 @@
-///! Useful methods and abstractions
+///! A set of useful methods and abstractions.
 
 use crate::ERC20Error;
 use hex::FromHexError;
