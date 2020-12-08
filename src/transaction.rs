@@ -1,3 +1,5 @@
+///! web3 transaction specific operations.
+
 use crate::{
 	erc20::ERC20Method,
 	error::ERC20Error,
@@ -21,12 +23,17 @@ use web3::types::{
 	U256,
 };
 
+/// Identifies an Ethereum transaction as a transfer, contract invocation, creation, or other.
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum ParsedTransaction {
+	/// Ether transfer transaction.
 	EthereumTransfer(Transaction),
+	/// Smart contract invocation transaction.
 	ContractInvocation(TransactionContractInvocation),
+	/// Smart contract creation transaction.
 	ContractCreation(Transaction),
+	/// Unidentified transaction.
 	Other(Transaction),
 }
 
@@ -48,9 +55,12 @@ impl From<Transaction> for ParsedTransaction {
 	}
 }
 
+/// Smart contract invocation transaction.
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub enum TransactionContractInvocation {
+	/// ERC20 contract invocation.
 	ERC20(ERC20Method, Transaction),
+	/// Any smart contract invocation that is not a ERC20 contract.
 	Other(Transaction),
 }
 
@@ -64,6 +74,7 @@ impl From<Transaction> for TransactionContractInvocation {
 	}
 }
 
+/// Transaction and transaction type information for asset transfers.
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransactionAndTransferType {
@@ -107,6 +118,8 @@ impl TryFrom<Transaction> for TransactionAndTransferType {
 }
 
 impl TransactionAndTransferType {
+	/// Gets information from the transaction.
+	/// The `from`, `to`, and `value` regardless if it is an ERC20 or Ether transfer.
 	pub fn get_from_to_value(&self) -> Result<(H160, H160, U256), ERC20Error> {
 		let from_v: H160;
 		let to_v: H160;
