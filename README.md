@@ -1,7 +1,7 @@
 # erc20
 
 <p align="center">
-  <a href="https://travis-ci.com/github/rodoufu/erc20/">
+  <a href="https://travis-ci.org/github/rodoufu/erc20">
     <img src="https://travis-ci.com/rodoufu/erc20.svg?branch=master" alt="Current TravisCI build status.">
   </a>
   <a href="https://github.com/rodoufu/erc20/releases">
