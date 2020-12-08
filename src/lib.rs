@@ -9,6 +9,8 @@ extern crate hex;
 mod error;
 /// A set of useful methods and abstractions.
 pub mod util;
+#[cfg(test)]
+mod util_test;
 /// Ethereum transfer abstraction.
 pub mod transfer;
 /// ERC20 specific information.

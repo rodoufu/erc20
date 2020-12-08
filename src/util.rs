@@ -1,7 +1,6 @@
 ///! A set of useful methods and abstractions.
 
 use crate::ERC20Error;
-use hex::FromHexError;
 use web3::types::{
 	Bytes,
 	H160,
@@ -164,16 +163,22 @@ impl FixedNumberToBytes {
 	/// * `value` - U256 to be pushed.
 	///
 	pub fn push_u256(&mut self, value: &U256) {
-		for i in 0..(256 / 8) {
+		for i in (0..(256 / 8)).rev() {
 			self.data.push(value.byte(i));
 		}
 	}
 }
 
-impl From<Bytes> for FixedNumberToBytes {
-	fn from(data: Bytes) -> Self {
+impl Default for FixedNumberToBytes {
+	fn default() -> Self {
 		Self {
-			data: data.0
+			data: Vec::new(),
 		}
+	}
+}
+
+impl From<FixedNumberToBytes> for Vec<u8> {
+	fn from(data: FixedNumberToBytes) -> Self {
+		data.data
 	}
 }
