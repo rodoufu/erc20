@@ -5,6 +5,8 @@
 This project intends to parse the Ethereum transactions from web3 into an abstraction that makes generic dealing 
 with Ethereum or ERC20 transfers.
 
+Available at https://crates.io/crates/erc20
+
 ## Code examples
 
 ### Parsing a transfer
