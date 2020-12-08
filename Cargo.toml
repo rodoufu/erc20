@@ -8,7 +8,7 @@ description = "A simple implementation for parsing ERC20 transactions from the b
 repository = "https://github.com/rodoufu/erc20"
 readme = "README.md"
 keywords = ["blockchain", "ethereum", "transaction", "transfer", "web3"]
-categories = ["blockchain", "ethereum"]
+categories = ["parsing"]
 
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
