@@ -1,3 +1,7 @@
+//! A simple implementation for parsing ERC20 transactions
+#![warn(missing_docs)]
+// #![warn(missing_doc_code_examples)]
+
 extern crate serde;
 extern crate hex;
 

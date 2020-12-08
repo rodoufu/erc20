@@ -10,19 +10,27 @@ use std::{
 		TryFrom,
 		TryInto,
 	},
+	str::FromStr,
 };
 use web3::types::H160;
-use std::str::FromStr;
 
+/// ERC20 method operation
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum ERC20Method {
+	/// Returns the amount which `spender` is still allowed to withdraw from `owner`.
 	Allowance,
+	/// Allows `spender` to withdraw from your account multiple times, up to the `value` amount. If this function is called again it overwrites the current allowance with `value`.
 	Approve,
+	/// Returns the account balance of another account with address `owner`.
 	BalanceOf,
+	/// Returns the total token supply.
 	TotalSupply,
+	/// Transfers `value` amount of tokens to address `to`, and MUST fire the Transfer event. The function SHOULD throw if the message caller’s account balance does not have enough tokens to spend.
 	Transfer,
+	/// Transfers `value` amount of tokens from address `from` to address `to`, and MUST fire the Transfer event.
 	TransferFrom,
+	/// In case it is not identified an ERC20 operation.
 	Unidentified,
 }
 
@@ -75,6 +83,7 @@ impl From<Vec<u8>> for ERC20Method {
 	}
 }
 
+/// Known ERC20 contract addresses.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum ContractAddress {
