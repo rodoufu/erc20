@@ -1,7 +1,7 @@
 # erc20
 
 <p align="center">
-  <a href="https://travis-ci.com/NeoResearch/libbft">
+  <a href="https://travis-ci.com/rodoufu/erc20">
     <img src="https://travis-ci.com/rodoufu/erc20.svg?branch=master" alt="Current TravisCI build status.">
   </a>
   <a href="https://github.com/rodoufu/erc20/releases">
