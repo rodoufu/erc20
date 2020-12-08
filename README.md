@@ -1,5 +1,26 @@
 # erc20
 
+<p align="center">
+  <a href="https://travis-ci.com/NeoResearch/libbft">
+    <img src="https://travis-ci.com/rodoufu/erc20.svg?branch=master" alt="Current TravisCI build status.">
+  </a>
+  <a href="https://github.com/rodoufu/erc20/releases">
+    <img src="https://badge.fury.io/gh/rodoufu%2Ferc20.svg" alt="Current version.">
+  </a>
+  <!--
+  <a href='https://coveralls.io/github/rodoufu/erc20'>
+    <img src='https://coveralls.io/repos/github/rodoufu/erc20/badge.svg' alt='Coverage Status' />
+  </a>
+  -->
+  <a href="https://github.com/rodoufu/erc20">
+      <img src="https://tokei.rs/b1/github/rodoufu/erc20?category=lines" alt="Current total lines.">
+    </a>
+  <a href="https://github.com/rodoufu/erc20/blob/master/LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License.">
+  </a>
+</p>
+
+
 ## Rust ERC20 parser
 
 This project intends to parse the Ethereum transactions from web3 into an abstraction that makes generic dealing 
