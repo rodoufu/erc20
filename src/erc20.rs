@@ -1,3 +1,5 @@
+///! ERC20 specific information.
+
 use crate::ERC20Error;
 use maplit::hashmap;
 use serde::{

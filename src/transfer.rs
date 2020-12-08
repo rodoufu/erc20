@@ -1,3 +1,5 @@
+///! Ethereum transfer abstraction.
+
 use serde::{
 	Deserialize,
 	Serialize,
@@ -13,21 +15,33 @@ use web3::types::{
 	U256,
 };
 
+/// Type of the asset transfer.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum TransferType {
+	/// Indicates an Ether transfer.
 	Ethereum,
+	/// Indicates an ERC20 transfer.
 	ERC20,
 }
 
+/// Asset transfer abstraction.
 pub trait Transfer {
+	/// Returns the sender of the transfer.
 	fn from(&self) -> H160;
+	/// Returns the recipient of the transfer.
 	fn to(&self) -> H160;
+	/// Returns the ERC20 contract address for ERC20 transfers.
 	fn contract(&self) -> Option<H160>;
+	/// Returns the value of the transfer.
 	fn value(&self) -> U256;
+	/// Returns the transaction hash for the transfer.
 	fn tx_hash(&self) -> H256;
+	/// Returns the block hash for the transfer, if available.
 	fn block_hash(&self) -> Option<H256>;
+	/// Returns the block number for the transfer, if available.
 	fn block_number(&self) -> Option<U64>;
+	/// Returns the transaction index for the transfer, if available.
 	fn transaction_index(&self) -> Option<Index>;
 }
 
