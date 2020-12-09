@@ -8,6 +8,9 @@ use web3::types::{
 	U256,
 };
 
+const WORD_SIZE_256_BITS: usize = 32;
+const WORD_SIZE_160_BITS: usize = 20;
+
 /// Converts `Bytes` and `Vec<u8>` to H160, H256, and U256.
 pub struct BytesToFixedNumber {
 	data: Vec<u8>,
@@ -66,37 +69,31 @@ impl BytesToFixedNumber {
 
 	/// Returns the next H160.
 	pub fn next_h160(&mut self) -> Result<H160, ERC20Error> {
-		self.skip((256 - 160) / 8)?;
+		self.skip(WORD_SIZE_256_BITS - WORD_SIZE_160_BITS)?;
 		self.next_h160_not_padded()
 	}
 
 	/// Returns the next H160 with no padding to 32 bytes.
 	pub fn next_h160_not_padded(&mut self) -> Result<H160, ERC20Error> {
-		let vec_resp = self.next_vec(20)?;
-		let mut the_vec: [u8; 20] = [0; 20];
-		for i in 0..20 {
-			the_vec[i] = vec_resp[i];
-		}
+		let vec_resp = self.next_vec(WORD_SIZE_160_BITS)?;
+		let mut the_vec: [u8; WORD_SIZE_160_BITS] = [0; WORD_SIZE_160_BITS];
+		the_vec[..WORD_SIZE_160_BITS].clone_from_slice(&vec_resp[..WORD_SIZE_160_BITS]);
 		Ok(the_vec.into())
 	}
 
 	/// Returns the next H256.
 	pub fn next_h256(&mut self) -> Result<H256, ERC20Error> {
-		let vec_resp = self.next_vec(32)?;
-		let mut the_vec: [u8; 32] = [0; 32];
-		for i in 0..32 {
-			the_vec[i] = vec_resp[i];
-		}
+		let vec_resp = self.next_vec(WORD_SIZE_256_BITS)?;
+		let mut the_vec: [u8; WORD_SIZE_256_BITS] = [0; WORD_SIZE_256_BITS];
+		the_vec[..WORD_SIZE_256_BITS].clone_from_slice(&vec_resp[..WORD_SIZE_256_BITS]);
 		Ok(the_vec.into())
 	}
 
 	/// Returns the next U256.
 	pub fn next_u256(&mut self) -> Result<U256, ERC20Error> {
-		let vec_resp = self.next_vec(32)?;
-		let mut the_vec: [u8; 32] = [0; 32];
-		for i in 0..32 {
-			the_vec[i] = vec_resp[i];
-		}
+		let vec_resp = self.next_vec(WORD_SIZE_256_BITS)?;
+		let mut the_vec: [u8; WORD_SIZE_256_BITS] = [0; WORD_SIZE_256_BITS];
+		the_vec[..WORD_SIZE_256_BITS].clone_from_slice(&vec_resp[..WORD_SIZE_256_BITS]);
 		Ok(the_vec.into())
 	}
 }
@@ -113,7 +110,8 @@ impl FixedNumberToBytes {
 	///
 	/// * `vec` - Vector with the bytes to be added.
 	///
-	pub fn push_vec(&mut self, vec: &Vec<u8>) {
+	// pub fn push_vec(&mut self, vec: &Vec<u8>) {
+	pub fn push_vec(&mut self, vec: &[u8]) {
 		for it in vec {
 			self.data.push(*it);
 		}
@@ -125,8 +123,9 @@ impl FixedNumberToBytes {
 	///
 	/// * `value` - H160 to be pushed.
 	///
+	#[allow(clippy::same_item_push)]
 	pub fn push_h160(&mut self, value: &H160) {
-		for _ in 0..((256 - 160) / 8) {
+		for _ in 0..(WORD_SIZE_256_BITS - WORD_SIZE_160_BITS) {
 			self.data.push(0);
 		}
 		self.push_h160_not_padded(value);
@@ -163,7 +162,7 @@ impl FixedNumberToBytes {
 	/// * `value` - U256 to be pushed.
 	///
 	pub fn push_u256(&mut self, value: &U256) {
-		for i in (0..(256 / 8)).rev() {
+		for i in (0..WORD_SIZE_256_BITS).rev() {
 			self.data.push(value.byte(i));
 		}
 	}
