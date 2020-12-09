@@ -9,14 +9,16 @@ mod error;
 /// A set of useful methods and abstractions.
 pub mod util;
 #[cfg(test)]
-mod util_test;
+mod util_tests;
 /// Ethereum transfer abstraction.
 pub mod transfer;
 /// ERC20 specific information.
 pub mod erc20;
+#[cfg(test)]
+mod erc20_tests;
 /// web3 transaction specific operations.
 pub mod transaction;
 #[cfg(test)]
-mod transaction_test;
+mod transaction_tests;
 
 pub use self::error::ERC20Error;

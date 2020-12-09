@@ -1,10 +1,11 @@
 [package]
 name = "erc20"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Rodolfo Araujo <rodoufu@gmail.com>"]
 edition = "2018"
 license-file = "LICENSE"
 description = "A simple implementation for parsing ERC20 transactions from the blockchain"
+homepage = "https://github.com/rodoufu/erc20"
 repository = "https://github.com/rodoufu/erc20"
 readme = "README.md"
 keywords = ["blockchain", "ethereum", "transaction", "transfer", "web3"]
