@@ -190,3 +190,9 @@ impl From<ContractAddress> for H160 {
 		}
 	}
 }
+
+impl Default for ContractAddress {
+	fn default() -> Self {
+		From::<H160>::from(Default::default())
+	}
+}
