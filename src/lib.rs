@@ -4,7 +4,6 @@
 //! A simple implementation for parsing ERC20 transactions
 
 extern crate serde;
-extern crate hex;
 
 mod error;
 /// A set of useful methods and abstractions.
