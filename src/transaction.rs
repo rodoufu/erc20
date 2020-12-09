@@ -55,6 +55,12 @@ impl From<Transaction> for ParsedTransaction {
 	}
 }
 
+impl Default for ParsedTransaction {
+	fn default() -> Self {
+		From::<Transaction>::from(Default::default())
+	}
+}
+
 /// Smart contract invocation transaction.
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub enum TransactionContractInvocation {
